@@ -22,7 +22,7 @@ def sanitize_filename(filename: str) -> str:
 def create_document(
     course_code: str,
     filename: str,
-    file_content: bytes,
+    file_obj,
     content_type: str,
     file_size: int,
     uploaded_by: str,
@@ -34,7 +34,7 @@ def create_document(
     s3_key = f"documents/{course_code}/{document_id}/{safe_filename}"
 
     try:
-        upload_file_to_s3(file_content, s3_key, content_type)
+        upload_file_to_s3(file_obj, s3_key, content_type)
     except Exception as e:
         raise DocumentUploadError(f"Failed to upload document: {str(e)}")
 

@@ -63,14 +63,16 @@ def upload_document(
     current_user: UserResponse = Depends(require_professor),
     db: Database = Depends(get_database)
 ) -> DocumentResponse:
-    file_content = file.file.read()
-    file_size = len(file_content)
+    file.file.seek(0, 2)
+    file_size = file.file.tell()
+    file.file.seek(0)
+    
     content_type = file.content_type or "application/octet-stream"
 
     document = create_document_service(
         course_code=course_code,
         filename=file.filename,
-        file_content=file_content,
+        file_obj=file.file,
         content_type=content_type,
         file_size=file_size,
         uploaded_by=current_user.email,

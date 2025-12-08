@@ -33,13 +33,13 @@ def get_s3_client():
     )
 
 
-def upload_file_to_s3(file_content: bytes, s3_key: str, content_type: str) -> None:
+def upload_file_to_s3(file_obj, s3_key: str, content_type: str) -> None:
     s3_client = get_s3_client()
     try:
         s3_client.put_object(
             Bucket=settings.s3_bucket_name,
             Key=s3_key,
-            Body=file_content,
+            Body=file_obj,
             ContentType=content_type,
         )
     except ClientError as e:
