@@ -33,7 +33,7 @@ pip install -r requirements.txt
 cp .env.example .env
 ```
 
-Edit `.env`:
+Edit `.env` with your actual credentials:
 ```env
 MONGODB_URI=mongodb://localhost:27017
 MONGODB_DATABASE=cetec_assistant
@@ -44,6 +44,8 @@ AWS_SECRET_ACCESS_KEY=your-aws-secret-access-key
 AWS_REGION=us-east-1
 S3_BUCKET_NAME=your-s3-bucket-name
 ```
+
+**⚠️ SECURITY WARNING:** Never commit the `.env` file to version control. It contains sensitive credentials that should remain private. The `.env` file is already in `.gitignore` to prevent accidental commits.
 
 4. Run:
 ```bash
