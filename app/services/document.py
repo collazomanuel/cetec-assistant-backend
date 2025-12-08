@@ -103,14 +103,16 @@ def delete_document(document_id: str, db: Database) -> None:
 
     s3_key = doc["s3_key"]
 
+    # Delete from MongoDB first to avoid orphaned DB records
+    result = db.documents.delete_one({"document_id": document_id})
+    if result.deleted_count == 0:
+        raise DocumentNotFoundError(f"Document with ID {document_id} not found")
+
+    # Then delete from S3 (if this fails, at least DB is clean)
     try:
         delete_file_from_s3(s3_key)
     except Exception as e:
         raise DocumentDeleteError(f"Failed to delete document from S3: {str(e)}")
-
-    result = db.documents.delete_one({"document_id": document_id})
-    if result.deleted_count == 0:
-        raise DocumentNotFoundError(f"Document with ID {document_id} not found")
 
 
 def get_document_download_url(document_id: str, db: Database) -> str:
