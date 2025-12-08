@@ -5,7 +5,7 @@ from app.database import get_database
 from app.dependencies import get_current_user, require_admin
 from app.exceptions import UserNotFoundError, CannotDeleteSelfError
 from app.models.user import UserResponse, UserCreate, UserUpdate, UserDelete
-from app.services.user import get_user_by_email, get_all_users, create_user, update_user, delete_user
+from app.services import user as user_service
 from app.services.log import log_event
 
 
@@ -24,20 +24,20 @@ def get_users(
     db: Database = Depends(get_database)
 ) -> list[UserResponse]:
     if email:
-        user = get_user_by_email(email, db)
+        user = user_service.get_user_by_email(email, db)
         if user is None:
             raise UserNotFoundError(f"User with email {email} not found")
         return [user]
-    return get_all_users(db)
+    return user_service.get_all_users(db)
 
 
 @router.post("")
-def create_user_endpoint(
+def create_user(
     user_data: UserCreate,
     current_user: UserResponse = Depends(require_admin),
     db: Database = Depends(get_database)
 ) -> UserResponse:
-    user = create_user(user_data.email, user_data.name, user_data.roles, db)
+    user = user_service.create_user(user_data.email, user_data.name, user_data.roles, db)
     log_event(
         "user_created",
         level="info",
@@ -48,12 +48,12 @@ def create_user_endpoint(
 
 
 @router.patch("")
-def update_user_endpoint(
+def update_user(
     user_data: UserUpdate,
     current_user: UserResponse = Depends(require_admin),
     db: Database = Depends(get_database)
 ) -> UserResponse:
-    user = update_user(user_data.email, db, name=user_data.name, roles=user_data.roles)
+    user = user_service.update_user(user_data.email, db, name=user_data.name, roles=user_data.roles)
     log_event(
         "user_updated",
         level="info",
@@ -64,7 +64,7 @@ def update_user_endpoint(
 
 
 @router.delete("")
-def delete_user_endpoint(
+def delete_user(
     user_data: UserDelete,
     current_user: UserResponse = Depends(require_admin),
     db: Database = Depends(get_database)
@@ -72,7 +72,7 @@ def delete_user_endpoint(
     if user_data.email == current_user.email:
         raise CannotDeleteSelfError("Cannot delete your own account")
 
-    delete_user(user_data.email, db)
+    user_service.delete_user(user_data.email, db)
     log_event(
         "user_deleted",
         level="info",

@@ -1,88 +1,82 @@
-from fastapi import APIRouter, Depends
+from pymongo import ReturnDocument
 from pymongo.database import Database
 
-from app.database import get_database
-from app.dependencies import get_current_user, require_admin
-from app.exceptions import UserNotFoundError, CannotDeleteSelfError
-from app.models.user import UserResponse, UserCreate, UserUpdate, UserDelete
-from app.services.user import (
-    get_user_by_email,
-    get_all_users,
-    create_user as create_user_service,
-    update_user as update_user_service,
-    delete_user as delete_user_service
-)
-from app.services.log import log_event
+from app.exceptions import UserAlreadyExistsError, UserNotFoundError
+from app.models.user import Role, UserResponse
 
 
-router = APIRouter(prefix="/users")
+def get_user_by_email(email: str, db: Database) -> UserResponse | None:
+    user_doc = db.users.find_one({"email": email})
+    if user_doc is None:
+        return None
+    return UserResponse(
+        email=user_doc["email"],
+        name=user_doc["name"],
+        roles=user_doc["roles"]
+    )
 
 
-@router.get("/me")
-def get_me(current_user: UserResponse = Depends(get_current_user)) -> UserResponse:
-    return current_user
+def get_all_users(db: Database) -> list[UserResponse]:
+    users = []
+    for user_doc in db.users.find():
+        users.append(UserResponse(
+            email=user_doc["email"],
+            name=user_doc["name"],
+            roles=user_doc["roles"]
+        ))
+    return users
 
 
-@router.get("")
-def get_users(
-    email: str | None = None,
-    current_user: UserResponse = Depends(require_admin),
-    db: Database = Depends(get_database)
-) -> list[UserResponse]:
-    if email:
-        user = get_user_by_email(email, db)
-        if user is None:
+def create_user(email: str, name: str, roles: list[Role], db: Database) -> UserResponse:
+    existing_user = db.users.find_one({"email": email})
+    if existing_user:
+        raise UserAlreadyExistsError(f"User with email {email} already exists")
+
+    user_doc = {
+        "email": email,
+        "name": name,
+        "roles": roles
+    }
+    db.users.insert_one(user_doc)
+    return UserResponse(email=email, name=name, roles=roles)
+
+
+def update_user(email: str, db: Database, name: str | None = None, roles: list[Role] | None = None) -> UserResponse:
+    
+    update_fields = {}
+    if name is not None:
+        update_fields["name"] = name
+    if roles is not None:
+        update_fields["roles"] = roles
+
+    if not update_fields:
+        user_doc = db.users.find_one({"email": email})
+        if not user_doc:
             raise UserNotFoundError(f"User with email {email} not found")
-        return [user]
-    return get_all_users(db)
+        return UserResponse(
+            email=user_doc["email"],
+            name=user_doc["name"],
+            roles=user_doc["roles"]
+        )
 
-
-@router.post("")
-def create_user(
-    user_data: UserCreate,
-    current_user: UserResponse = Depends(require_admin),
-    db: Database = Depends(get_database)
-) -> UserResponse:
-    user = create_user_service(user_data.email, user_data.name, user_data.roles, db)
-    log_event(
-        "user_created",
-        level="info",
-        user_email=current_user.email,
-        details={"created_user_email": user.email}
+    updated_user = db.users.find_one_and_update(
+        {"email": email},
+        {"$set": update_fields},
+        return_document=ReturnDocument.AFTER
     )
-    return user
 
+    if not updated_user:
+        raise UserNotFoundError(f"User with email {email} not found")
 
-@router.patch("")
-def update_user(
-    user_data: UserUpdate,
-    current_user: UserResponse = Depends(require_admin),
-    db: Database = Depends(get_database)
-) -> UserResponse:
-    user = update_user_service(user_data.email, db, name=user_data.name, roles=user_data.roles)
-    log_event(
-        "user_updated",
-        level="info",
-        user_email=current_user.email,
-        details={"updated_user_email": user.email}
+    return UserResponse(
+        email=updated_user["email"],
+        name=updated_user["name"],
+        roles=updated_user["roles"]
     )
-    return user
 
 
-@router.delete("")
-def delete_user(
-    user_data: UserDelete,
-    current_user: UserResponse = Depends(require_admin),
-    db: Database = Depends(get_database)
-) -> dict[str, str]:
-    if user_data.email == current_user.email:
-        raise CannotDeleteSelfError("Cannot delete your own account")
+def delete_user(email: str, db: Database) -> None:
+    result = db.users.delete_one({"email": email})
+    if result.deleted_count == 0:
+        raise UserNotFoundError(f"User with email {email} not found")
 
-    delete_user_service(user_data.email, db)
-    log_event(
-        "user_deleted",
-        level="info",
-        user_email=current_user.email,
-        details={"deleted_user_email": user_data.email}
-    )
-    return {"message": "User deleted successfully"}
