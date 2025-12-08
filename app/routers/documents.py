@@ -5,14 +5,8 @@ from app.database import get_database
 from app.dependencies import require_professor
 from app.models.user import UserResponse
 from app.models.document import DocumentResponse, DocumentWithDownloadUrl
-from app.services.document import (
-    create_document as create_document_service,
-    get_documents_by_course as get_documents_by_course_service,
-    get_document_by_id as get_document_by_id_service,
-    delete_document as delete_document_service,
-    get_document_download_url as get_document_download_url_service
-)
-from app.services.course import get_course_by_code
+from app.services import document as document_service
+from app.services import course as course_service
 from app.services.log import log_event
 from app.exceptions import DocumentNotFoundError, FileTooLargeError, CourseNotFoundError
 
@@ -25,7 +19,7 @@ def list_documents(
     current_user: UserResponse = Depends(require_professor),
     db: Database = Depends(get_database)
 ) -> list[DocumentResponse]:
-    documents = get_documents_by_course_service(course_code, db)
+    documents = document_service.get_documents_by_course(course_code, db)
     log_event(
         "documents_listed",
         level="info",
@@ -41,11 +35,11 @@ def get_document(
     current_user: UserResponse = Depends(require_professor),
     db: Database = Depends(get_database)
 ) -> DocumentWithDownloadUrl:
-    document = get_document_by_id_service(document_id, db)
+    document = document_service.get_document_by_id(document_id, db)
     if document is None:
         raise DocumentNotFoundError(f"Document with ID {document_id} not found")
 
-    download_url = get_document_download_url_service(document_id, db)
+    download_url = document_service.get_document_download_url(document_id, db)
     log_event(
         "document_accessed",
         level="info",
@@ -66,7 +60,7 @@ def upload_document(
     db: Database = Depends(get_database)
 ) -> DocumentResponse:
     # Validate course exists
-    course = get_course_by_code(course_code, db)
+    course = course_service.get_course_by_code(course_code, db)
     if course is None:
         raise CourseNotFoundError(f"Course with code {course_code} not found")
     
@@ -85,7 +79,7 @@ def upload_document(
         
         content_type = file.content_type or "application/octet-stream"
 
-        document = create_document_service(
+        document = document_service.create_document(
             course_code=course_code,
             filename=file.filename,
             file_obj=file.file,
@@ -117,12 +111,12 @@ def delete_document(
     document_id: str,
     current_user: UserResponse = Depends(require_professor),
     db: Database = Depends(get_database)
-) -> dict:
-    document = get_document_by_id_service(document_id, db)
+) -> dict[str, str]:
+    document = document_service.get_document_by_id(document_id, db)
     if document is None:
         raise DocumentNotFoundError(f"Document with ID {document_id} not found")
 
-    delete_document_service(document_id, db)
+    document_service.delete_document(document_id, db)
 
     log_event(
         "document_deleted",

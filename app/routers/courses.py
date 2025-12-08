@@ -6,13 +6,7 @@ from app.dependencies import get_current_user, require_student, require_professo
 from app.exceptions import CourseNotFoundError
 from app.models.user import UserResponse
 from app.models.course import CourseResponse, CourseCreate, CourseUpdate, CourseDelete
-from app.services.course import (
-    get_course_by_code as get_course_by_code_service,
-    get_all_courses as get_all_courses_service,
-    create_course as create_course_service,
-    update_course as update_course_service,
-    delete_course as delete_course_service
-)
+from app.services import course as course_service
 from app.services.log import log_event
 
 
@@ -26,20 +20,20 @@ def get_courses(
     db: Database = Depends(get_database)
 ) -> list[CourseResponse]:
     if code:
-        course = get_course_by_code_service(code, db)
+        course = course_service.get_course_by_code(code, db)
         if course is None:
             raise CourseNotFoundError(f"Course with code {code} not found")
         return [course]
-    return get_all_courses_service(db)
+    return course_service.get_all_courses(db)
 
 
 @router.post("")
-def create_course_endpoint(
+def create_course(
     course_data: CourseCreate,
     current_user: UserResponse = Depends(require_professor),
     db: Database = Depends(get_database)
 ) -> CourseResponse:
-    course = create_course_service(
+    course = course_service.create_course(
         course_data.code,
         course_data.name,
         course_data.description,
@@ -55,12 +49,12 @@ def create_course_endpoint(
 
 
 @router.patch("")
-def update_course_endpoint(
+def update_course(
     course_data: CourseUpdate,
     current_user: UserResponse = Depends(require_professor),
     db: Database = Depends(get_database)
 ) -> CourseResponse:
-    course = update_course_service(
+    course = course_service.update_course(
         course_data.code,
         db,
         new_code=course_data.new_code,
@@ -77,12 +71,12 @@ def update_course_endpoint(
 
 
 @router.delete("")
-def delete_course_endpoint(
+def delete_course(
     course_data: CourseDelete,
     current_user: UserResponse = Depends(require_professor),
     db: Database = Depends(get_database)
 ) -> dict[str, str]:
-    delete_course_service(course_data.code, db)
+    course_service.delete_course(course_data.code, db)
     log_event(
         "course_deleted",
         level="info",
