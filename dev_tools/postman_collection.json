@@ -714,15 +714,14 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/documents/:document_id",
+							"raw": "{{base_url}}/documents?document_id=550e8400-e29b-41d4-a716-446655440000",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"documents",
-								":document_id"
+								"documents"
 							],
-							"variable": [
+							"query": [
 								{
 									"key": "document_id",
 									"value": "550e8400-e29b-41d4-a716-446655440000",
@@ -784,23 +783,29 @@
 								"key": "Authorization",
 								"value": "Bearer {{google_id_token}}",
 								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
 							}
 						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"document_id\": \"550e8400-e29b-41d4-a716-446655440000\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
-							"raw": "{{base_url}}/documents/:document_id",
+							"raw": "{{base_url}}/documents",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"documents",
-								":document_id"
-							],
-							"variable": [
-								{
-									"key": "document_id",
-									"value": "550e8400-e29b-41d4-a716-446655440000",
-									"description": "UUID of the document to delete"
-								}
+								"documents"
 							]
 						},
 						"description": "Delete a document (professor and above)"
