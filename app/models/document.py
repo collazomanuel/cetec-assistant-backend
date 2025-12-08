@@ -20,5 +20,10 @@ class DocumentCreate(BaseModel):
     content_type: str
 
 
+class DocumentWithDownloadUrl(BaseModel):
+    document: DocumentResponse
+    download_url: str
+
+
 class DocumentDelete(BaseModel):
     document_id: str

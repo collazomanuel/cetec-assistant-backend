@@ -4,7 +4,7 @@ from app.config import settings
 from app.database import get_database
 from app.dependencies import require_professor
 from app.models.user import UserResponse
-from app.models.document import DocumentResponse
+from app.models.document import DocumentResponse, DocumentWithDownloadUrl
 from app.services.document import (
     create_document as create_document_service,
     get_documents_by_course as get_documents_by_course_service,
@@ -40,7 +40,7 @@ def get_document(
     document_id: str,
     current_user: UserResponse = Depends(require_professor),
     db: Database = Depends(get_database)
-) -> dict:
+) -> DocumentWithDownloadUrl:
     document = get_document_by_id_service(document_id, db)
     if document is None:
         raise DocumentNotFoundError(f"Document with ID {document_id} not found")
@@ -52,10 +52,10 @@ def get_document(
         user_email=current_user.email,
         details={"document_id": document_id, "filename": document.filename}
     )
-    return {
-        "document": document,
-        "download_url": download_url
-    }
+    return DocumentWithDownloadUrl(
+        document=document,
+        download_url=download_url
+    )
 
 
 @router.post("")
