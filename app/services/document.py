@@ -1,9 +1,22 @@
 import uuid
+import re
 from datetime import datetime, timezone
 from pymongo.database import Database
 from app.models.document import DocumentResponse
 from app.exceptions import DocumentNotFoundError, DocumentUploadError
 from app.services.s3 import upload_file_to_s3, delete_file_from_s3, generate_presigned_url
+
+
+def sanitize_filename(filename: str) -> str:
+    """
+    Sanitize filename for safe S3 storage.
+    Replaces spaces with underscores and removes special characters.
+    """
+    # Replace spaces with underscores
+    filename = filename.replace(" ", "_")
+    # Remove any character that's not alphanumeric, underscore, dash, or dot
+    filename = re.sub(r"[^\w\-.]", "", filename)
+    return filename
 
 
 def create_document(
@@ -16,7 +29,9 @@ def create_document(
     db: Database
 ) -> DocumentResponse:
     document_id = str(uuid.uuid4())
-    s3_key = f"documents/{course_code}/{document_id}/{filename}"
+    # Sanitize the filename for S3 key
+    safe_filename = sanitize_filename(filename)
+    s3_key = f"documents/{course_code}/{document_id}/{safe_filename}"
 
     try:
         upload_file_to_s3(file_content, s3_key, content_type)
