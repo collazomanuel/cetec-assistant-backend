@@ -106,9 +106,9 @@ Users must be created by an admin before they can authenticate.
 
 ### Courses
 - `GET /courses` - List all courses (student+)
-- `GET /courses?id=x` - Get specific course by ID (student+)
+- `GET /courses?code=x` - Get specific course by code (student+)
 - `POST /courses` - Create course (professor+)
-- `PATCH /courses` - Update course name/description (professor+)
+- `PATCH /courses` - Update course code/name/description (professor+)
 - `DELETE /courses` - Delete course (professor+)
 
 ## Event Logging
@@ -142,7 +142,6 @@ Import [`postman_collection.json`](postman_collection.json) into Postman. Update
 **courses**
 ```json
 {
-  "id": "unique-course-id",
   "code": "CS101",
   "name": "Introduction to Computer Science",
   "description": "Fundamentals of programming and algorithms"

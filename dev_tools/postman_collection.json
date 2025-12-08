@@ -408,7 +408,7 @@
 					"response": []
 				},
 				{
-					"name": "Get Course by ID",
+					"name": "Get Course by Code",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -419,7 +419,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/courses?id=course-id-here",
+							"raw": "{{base_url}}/courses?code=CS101",
 							"host": [
 								"{{base_url}}"
 							],
@@ -428,13 +428,13 @@
 							],
 							"query": [
 								{
-									"key": "id",
-									"value": "course-id-here",
-									"description": "ID of the course to retrieve"
+									"key": "code",
+									"value": "CS101",
+									"description": "Code of the course to retrieve"
 								}
 							]
 						},
-						"description": "Get a specific course by ID (student and above)"
+						"description": "Get a specific course by code (student and above)"
 					},
 					"response": []
 				},
@@ -587,6 +587,44 @@
 							]
 						},
 						"description": "Update both name and description (professor and above)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Course Code",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{google_id_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"code\": \"CS101\",\n  \"new_code\": \"CS102\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/courses",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"courses"
+							]
+						},
+						"description": "Update course code (professor and above)"
 					},
 					"response": []
 				},

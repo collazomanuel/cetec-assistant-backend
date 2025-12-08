@@ -20,5 +20,4 @@ def ensure_indexes() -> None:
     db = get_database()
     db.users.create_index("email", unique=True)
     db.logs.create_index([("timestamp", -1)])
-    db.courses.create_index("id", unique=True)
     db.courses.create_index("code", unique=True)
