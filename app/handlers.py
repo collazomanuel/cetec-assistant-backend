@@ -1,0 +1,53 @@
+from fastapi import Request
+from fastapi.responses import JSONResponse
+
+from app.exceptions import (
+    AuthenticationError,
+    UserNotFoundError,
+    UnregisteredUserError,
+    ForbiddenError,
+    UserAlreadyExistsError,
+    CannotDeleteSelfError
+)
+
+
+def authentication_error_handler(request: Request, exc: AuthenticationError) -> JSONResponse:
+    return JSONResponse(
+        status_code=401,
+        content={"detail": str(exc)}
+    )
+
+
+def user_not_found_error_handler(request: Request, exc: UserNotFoundError) -> JSONResponse:
+    return JSONResponse(
+        status_code=404,
+        content={"detail": str(exc)}
+    )
+
+
+def user_not_registered_error_handler(request: Request, exc: UnregisteredUserError) -> JSONResponse:
+    return JSONResponse(
+        status_code=403,
+        content={"detail": str(exc)}
+    )
+
+
+def forbidden_error_handler(request: Request, exc: ForbiddenError) -> JSONResponse:
+    return JSONResponse(
+        status_code=403,
+        content={"detail": str(exc)}
+    )
+
+
+def user_already_exists_error_handler(request: Request, exc: UserAlreadyExistsError) -> JSONResponse:
+    return JSONResponse(
+        status_code=409,
+        content={"detail": str(exc)}
+    )
+
+
+def cannot_delete_self_error_handler(request: Request, exc: CannotDeleteSelfError) -> JSONResponse:
+    return JSONResponse(
+        status_code=400,
+        content={"detail": str(exc)}
+    )
