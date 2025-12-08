@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, UploadFile, File, Form, Query
 from pymongo.database import Database
+from app.config import settings
 from app.database import get_database
 from app.dependencies import require_professor
 from app.models.user import UserResponse
@@ -16,8 +17,6 @@ from app.services.log import log_event
 from app.exceptions import DocumentNotFoundError, FileTooLargeError, CourseNotFoundError
 
 router = APIRouter(prefix="/documents")
-
-MAX_FILE_SIZE = 100 * 1024 * 1024
 
 
 @router.get("")
@@ -78,10 +77,10 @@ def upload_document(
         file.file.seek(0)
         
         # Validate file size
-        if file_size > MAX_FILE_SIZE:
+        if file_size > settings.max_file_size:
             raise FileTooLargeError(
                 f"File size ({file_size} bytes) exceeds maximum allowed size "
-                f"of {MAX_FILE_SIZE} bytes ({MAX_FILE_SIZE // (1024 * 1024)}MB)"
+                f"of {settings.max_file_size} bytes ({settings.max_file_size // (1024 * 1024)}MB)"
             )
         
         content_type = file.content_type or "application/octet-stream"

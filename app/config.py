@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     aws_secret_access_key: str
     aws_region: str
     s3_bucket_name: str
+    max_file_size: int = 100 * 1024 * 1024
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
