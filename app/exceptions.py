@@ -37,3 +37,7 @@ class DocumentNotFoundError(Exception):
 class DocumentUploadError(Exception):
     pass
 
+
+class FileTooLargeError(Exception):
+    pass
+

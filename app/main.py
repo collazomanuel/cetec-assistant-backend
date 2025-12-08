@@ -13,7 +13,8 @@ from app.exceptions import (
     CourseNotFoundError,
     CourseAlreadyExistsError,
     DocumentNotFoundError,
-    DocumentUploadError
+    DocumentUploadError,
+    FileTooLargeError
 )
 from app.handlers import (
     authentication_error_handler,
@@ -25,7 +26,8 @@ from app.handlers import (
     course_not_found_error_handler,
     course_already_exists_error_handler,
     document_not_found_error_handler,
-    document_upload_error_handler
+    document_upload_error_handler,
+    file_too_large_error_handler
 )
 from app.routers import health, users, courses, documents
 
@@ -51,6 +53,7 @@ app.add_exception_handler(CourseNotFoundError, course_not_found_error_handler)
 app.add_exception_handler(CourseAlreadyExistsError, course_already_exists_error_handler)
 app.add_exception_handler(DocumentNotFoundError, document_not_found_error_handler)
 app.add_exception_handler(DocumentUploadError, document_upload_error_handler)
+app.add_exception_handler(FileTooLargeError, file_too_large_error_handler)
 
 app.include_router(health.router)
 app.include_router(users.router)

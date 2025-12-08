@@ -12,9 +12,11 @@ from app.services.document import (
     get_document_download_url as get_document_download_url_service
 )
 from app.services.log import log_event
-from app.exceptions import DocumentNotFoundError
+from app.exceptions import DocumentNotFoundError, FileTooLargeError
 
 router = APIRouter(prefix="/documents")
+
+MAX_FILE_SIZE = 100 * 1024 * 1024
 
 
 @router.get("")
@@ -63,9 +65,17 @@ def upload_document(
     current_user: UserResponse = Depends(require_professor),
     db: Database = Depends(get_database)
 ) -> DocumentResponse:
+    # Get file size
     file.file.seek(0, 2)
     file_size = file.file.tell()
     file.file.seek(0)
+    
+    # Validate file size
+    if file_size > MAX_FILE_SIZE:
+        raise FileTooLargeError(
+            f"File size ({file_size} bytes) exceeds maximum allowed size "
+            f"of {MAX_FILE_SIZE} bytes ({MAX_FILE_SIZE // (1024 * 1024)}MB)"
+        )
     
     content_type = file.content_type or "application/octet-stream"
 
