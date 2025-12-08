@@ -3,7 +3,28 @@ from botocore.exceptions import ClientError
 from app.config import settings
 
 
+def validate_s3_config() -> None:
+    """Validate that all required S3 configuration is present."""
+    missing_configs = []
+    
+    if not settings.aws_access_key_id:
+        missing_configs.append("AWS_ACCESS_KEY_ID")
+    if not settings.aws_secret_access_key:
+        missing_configs.append("AWS_SECRET_ACCESS_KEY")
+    if not settings.aws_region:
+        missing_configs.append("AWS_REGION")
+    if not settings.s3_bucket_name:
+        missing_configs.append("S3_BUCKET_NAME")
+    
+    if missing_configs:
+        raise ValueError(
+            f"Missing required S3 configuration: {', '.join(missing_configs)}. "
+            "Please check your environment variables."
+        )
+
+
 def get_s3_client():
+    validate_s3_config()
     return boto3.client(
         "s3",
         aws_access_key_id=settings.aws_access_key_id,
