@@ -58,13 +58,16 @@ app/
 ├── exceptions.py        # Custom exceptions
 ├── routers/
 │   ├── health.py        # Health check endpoint
-│   └── users.py         # User management endpoints
+│   ├── users.py         # User management endpoints
+│   └── courses.py       # Course management endpoints
 ├── models/
 │   ├── user.py          # User Pydantic models
+│   ├── course.py        # Course Pydantic models
 │   └── log.py           # Log entry model
 └── services/
     ├── auth.py          # Google token verification
     ├── user.py          # User CRUD operations
+    ├── course.py        # Course CRUD operations
     └── log.py           # Event logging service
 ```
 
@@ -101,12 +104,20 @@ Users must be created by an admin before they can authenticate.
 - `PATCH /users` - Update user name/roles (admin)
 - `DELETE /users` - Delete user (admin, cannot delete self)
 
+### Courses
+- `GET /courses` - List all courses (student+)
+- `GET /courses?id=x` - Get specific course by ID (student+)
+- `POST /courses` - Create course (professor+)
+- `PATCH /courses` - Update course name/description (professor+)
+- `DELETE /courses` - Delete course (professor+)
+
 ## Event Logging
 
-All authentication attempts and user management actions are logged to the `logs` collection:
+All authentication attempts and management actions are logged to the `logs` collection:
 
 - `auth_success` / `auth_failure` - Authentication events
-- `user_created` / `user_updated` / `user_deleted` - Admin actions
+- `user_created` / `user_updated` / `user_deleted` - User management actions
+- `course_created` / `course_updated` / `course_deleted` - Course management actions
 
 ## API Documentation
 
@@ -125,6 +136,16 @@ Import [`postman_collection.json`](postman_collection.json) into Postman. Update
   "email": "user@example.com",
   "name": "User Name",
   "roles": ["student"]
+}
+```
+
+**courses**
+```json
+{
+  "id": "unique-course-id",
+  "code": "CS101",
+  "name": "Introduction to Computer Science",
+  "description": "Fundamentals of programming and algorithms"
 }
 ```
 

@@ -21,3 +21,11 @@ class UserAlreadyExistsError(Exception):
 class CannotDeleteSelfError(Exception):
     pass
 
+
+class CourseNotFoundError(Exception):
+    pass
+
+
+class CourseAlreadyExistsError(Exception):
+    pass
+

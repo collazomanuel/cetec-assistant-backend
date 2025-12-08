@@ -7,7 +7,9 @@ from app.exceptions import (
     UnregisteredUserError,
     ForbiddenError,
     UserAlreadyExistsError,
-    CannotDeleteSelfError
+    CannotDeleteSelfError,
+    CourseNotFoundError,
+    CourseAlreadyExistsError
 )
 
 
@@ -49,5 +51,19 @@ def user_already_exists_error_handler(request: Request, exc: UserAlreadyExistsEr
 def cannot_delete_self_error_handler(request: Request, exc: CannotDeleteSelfError) -> JSONResponse:
     return JSONResponse(
         status_code=400,
+        content={"detail": str(exc)}
+    )
+
+
+def course_not_found_error_handler(request: Request, exc: CourseNotFoundError) -> JSONResponse:
+    return JSONResponse(
+        status_code=404,
+        content={"detail": str(exc)}
+    )
+
+
+def course_already_exists_error_handler(request: Request, exc: CourseAlreadyExistsError) -> JSONResponse:
+    return JSONResponse(
+        status_code=409,
         content={"detail": str(exc)}
     )
