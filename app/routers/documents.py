@@ -59,18 +59,15 @@ def upload_document(
     current_user: UserResponse = Depends(require_professor),
     db: Database = Depends(get_database)
 ) -> DocumentResponse:
-    # Validate course exists
     course = course_service.get_course_by_code(course_code, db)
     if course is None:
         raise CourseNotFoundError(f"Course with code {course_code} not found")
     
     try:
-        # Get file size
         file.file.seek(0, 2)
         file_size = file.file.tell()
         file.file.seek(0)
         
-        # Validate file size
         if file_size > settings.max_file_size:
             raise FileTooLargeError(
                 f"File size ({file_size} bytes) exceeds maximum allowed size "

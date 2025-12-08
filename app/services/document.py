@@ -8,13 +8,7 @@ from app.services.s3 import upload_file_to_s3, delete_file_from_s3, generate_pre
 
 
 def sanitize_filename(filename: str) -> str:
-    """
-    Sanitize filename for safe S3 storage.
-    Replaces spaces with underscores and removes special characters.
-    """
-    # Replace spaces with underscores
     filename = filename.replace(" ", "_")
-    # Remove any character that's not alphanumeric, underscore, dash, or dot
     filename = re.sub(r"[^\w\-.]", "", filename)
     return filename
 
@@ -29,7 +23,6 @@ def create_document(
     db: Database
 ) -> DocumentResponse:
     document_id = str(uuid.uuid4())
-    # Sanitize the filename for S3 key
     safe_filename = sanitize_filename(filename)
     s3_key = f"documents/{course_code}/{document_id}/{safe_filename}"
 
@@ -103,12 +96,10 @@ def delete_document(document_id: str, db: Database) -> None:
 
     s3_key = doc["s3_key"]
 
-    # Delete from MongoDB first to avoid orphaned DB records
     result = db.documents.delete_one({"document_id": document_id})
     if result.deleted_count == 0:
         raise DocumentNotFoundError(f"Document with ID {document_id} not found")
 
-    # Then delete from S3 (if this fails, at least DB is clean)
     try:
         delete_file_from_s3(s3_key)
     except Exception as e:
