@@ -38,6 +38,10 @@ class DocumentUploadError(Exception):
     pass
 
 
+class DocumentDeleteError(Exception):
+    pass
+
+
 class FileTooLargeError(Exception):
     pass
 

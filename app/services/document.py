@@ -3,7 +3,7 @@ import re
 from datetime import datetime, timezone
 from pymongo.database import Database
 from app.models.document import DocumentResponse
-from app.exceptions import DocumentNotFoundError, DocumentUploadError
+from app.exceptions import DocumentNotFoundError, DocumentUploadError, DocumentDeleteError
 from app.services.s3 import upload_file_to_s3, delete_file_from_s3, generate_presigned_url
 
 
@@ -106,7 +106,7 @@ def delete_document(document_id: str, db: Database) -> None:
     try:
         delete_file_from_s3(s3_key)
     except Exception as e:
-        raise DocumentUploadError(f"Failed to delete document from S3: {str(e)}")
+        raise DocumentDeleteError(f"Failed to delete document from S3: {str(e)}")
 
     result = db.documents.delete_one({"document_id": document_id})
     if result.deleted_count == 0:

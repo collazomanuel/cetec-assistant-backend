@@ -12,6 +12,7 @@ from app.exceptions import (
     CourseAlreadyExistsError,
     DocumentNotFoundError,
     DocumentUploadError,
+    DocumentDeleteError,
     FileTooLargeError
 )
 
@@ -80,6 +81,13 @@ def document_not_found_error_handler(request: Request, exc: DocumentNotFoundErro
 
 
 def document_upload_error_handler(request: Request, exc: DocumentUploadError) -> JSONResponse:
+    return JSONResponse(
+        status_code=500,
+        content={"detail": str(exc)}
+    )
+
+
+def document_delete_error_handler(request: Request, exc: DocumentDeleteError) -> JSONResponse:
     return JSONResponse(
         status_code=500,
         content={"detail": str(exc)}
