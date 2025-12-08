@@ -694,12 +694,13 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{base_url}}/documents?course_code=CS101",
+							"raw": "{{base_url}}/documents/course?course_code=CS101",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"documents"
+								"documents",
+								"course"
 							],
 							"query": [
 								{
@@ -729,12 +730,13 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{base_url}}/documents?document_id=550e8400-e29b-41d4-a716-446655440000",
+							"raw": "{{base_url}}/documents/download?document_id=550e8400-e29b-41d4-a716-446655440000",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"documents"
+								"documents",
+								"download"
 							],
 							"query": [
 								{

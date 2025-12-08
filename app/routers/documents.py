@@ -13,7 +13,7 @@ from app.exceptions import DocumentNotFoundError, FileTooLargeError, CourseNotFo
 router = APIRouter(prefix="/documents")
 
 
-@router.get("")
+@router.get("/course")
 def list_documents(
     course_code: str = Query(..., description="Course code to filter documents"),
     current_user: UserResponse = Depends(require_professor),
@@ -29,7 +29,7 @@ def list_documents(
     return documents
 
 
-@router.get("")
+@router.get("/download")
 def get_document(
     document_id: str = Query(..., description="Document ID to retrieve"),
     current_user: UserResponse = Depends(require_professor),
