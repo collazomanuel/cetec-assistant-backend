@@ -71,43 +71,46 @@ def upload_document(
     if course is None:
         raise CourseNotFoundError(f"Course with code {course_code} not found")
     
-    # Get file size
-    file.file.seek(0, 2)
-    file_size = file.file.tell()
-    file.file.seek(0)
-    
-    # Validate file size
-    if file_size > MAX_FILE_SIZE:
-        raise FileTooLargeError(
-            f"File size ({file_size} bytes) exceeds maximum allowed size "
-            f"of {MAX_FILE_SIZE} bytes ({MAX_FILE_SIZE // (1024 * 1024)}MB)"
+    try:
+        # Get file size
+        file.file.seek(0, 2)
+        file_size = file.file.tell()
+        file.file.seek(0)
+        
+        # Validate file size
+        if file_size > MAX_FILE_SIZE:
+            raise FileTooLargeError(
+                f"File size ({file_size} bytes) exceeds maximum allowed size "
+                f"of {MAX_FILE_SIZE} bytes ({MAX_FILE_SIZE // (1024 * 1024)}MB)"
+            )
+        
+        content_type = file.content_type or "application/octet-stream"
+
+        document = create_document_service(
+            course_code=course_code,
+            filename=file.filename,
+            file_obj=file.file,
+            content_type=content_type,
+            file_size=file_size,
+            uploaded_by=current_user.email,
+            db=db
         )
-    
-    content_type = file.content_type or "application/octet-stream"
 
-    document = create_document_service(
-        course_code=course_code,
-        filename=file.filename,
-        file_obj=file.file,
-        content_type=content_type,
-        file_size=file_size,
-        uploaded_by=current_user.email,
-        db=db
-    )
+        log_event(
+            "document_uploaded",
+            level="info",
+            user_email=current_user.email,
+            details={
+                "document_id": document.document_id,
+                "course_code": course_code,
+                "filename": file.filename,
+                "file_size": file_size
+            }
+        )
 
-    log_event(
-        "document_uploaded",
-        level="info",
-        user_email=current_user.email,
-        details={
-            "document_id": document.document_id,
-            "course_code": course_code,
-            "filename": file.filename,
-            "file_size": file_size
-        }
-    )
-
-    return document
+        return document
+    finally:
+        file.file.close()
 
 
 @router.delete("/{document_id}")
