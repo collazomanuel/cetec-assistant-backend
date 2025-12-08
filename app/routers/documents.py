@@ -102,7 +102,7 @@ def delete_document(
     if document is None:
         raise DocumentNotFoundError(f"Document with ID {document_id} not found")
 
-    delete_document(document_id, db)
+    delete_document_service(document_id, db)
 
     log_event(
         "document_deleted",
