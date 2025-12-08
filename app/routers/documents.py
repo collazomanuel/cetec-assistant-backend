@@ -4,7 +4,7 @@ from app.config import settings
 from app.database import get_database
 from app.dependencies import require_professor
 from app.models.user import UserResponse
-from app.models.document import DocumentResponse, DocumentWithDownloadUrl
+from app.models.document import DocumentResponse, DocumentWithDownloadUrl, DocumentDelete
 from app.services import document as document_service
 from app.services import course as course_service
 from app.services.log import log_event
@@ -29,9 +29,9 @@ def list_documents(
     return documents
 
 
-@router.get("/{document_id}")
+@router.get("")
 def get_document(
-    document_id: str,
+    document_id: str = Query(..., description="Document ID to retrieve"),
     current_user: UserResponse = Depends(require_professor),
     db: Database = Depends(get_database)
 ) -> DocumentWithDownloadUrl:
@@ -106,27 +106,27 @@ def upload_document(
         file.file.close()
 
 
-@router.delete("/{document_id}")
+@router.delete("")
 def delete_document(
-    document_id: str,
+    document_data: DocumentDelete,
     current_user: UserResponse = Depends(require_professor),
     db: Database = Depends(get_database)
 ) -> dict[str, str]:
-    document = document_service.get_document_by_id(document_id, db)
+    document = document_service.get_document_by_id(document_data.document_id, db)
     if document is None:
-        raise DocumentNotFoundError(f"Document with ID {document_id} not found")
+        raise DocumentNotFoundError(f"Document with ID {document_data.document_id} not found")
 
-    document_service.delete_document(document_id, db)
+    document_service.delete_document(document_data.document_id, db)
 
     log_event(
         "document_deleted",
         level="info",
         user_email=current_user.email,
         details={
-            "document_id": document_id,
+            "document_id": document_data.document_id,
             "filename": document.filename,
             "course_code": document.course_code
         }
     )
 
-    return {"message": f"Document {document_id} deleted successfully"}
+    return {"message": "Document deleted successfully"}

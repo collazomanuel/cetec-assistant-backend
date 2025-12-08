@@ -124,9 +124,9 @@ Users must be created by an admin before they can authenticate.
 
 ### Documents
 - `GET /documents?course_code=x` - List documents for a course (professor+)
-- `GET /documents/{document_id}` - Get document with presigned download URL (professor+)
+- `GET /documents?document_id=x` - Get document with presigned download URL (professor+)
 - `POST /documents` - Upload document to course (professor+, multipart/form-data)
-- `DELETE /documents/{document_id}` - Delete document (professor+)
+- `DELETE /documents` - Delete document (professor+, body: document_id)
 
 ## Event Logging
 
