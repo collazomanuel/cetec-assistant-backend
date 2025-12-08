@@ -9,7 +9,9 @@ from app.exceptions import (
     UserAlreadyExistsError,
     CannotDeleteSelfError,
     CourseNotFoundError,
-    CourseAlreadyExistsError
+    CourseAlreadyExistsError,
+    DocumentNotFoundError,
+    DocumentUploadError
 )
 
 
@@ -65,5 +67,19 @@ def course_not_found_error_handler(request: Request, exc: CourseNotFoundError) -
 def course_already_exists_error_handler(request: Request, exc: CourseAlreadyExistsError) -> JSONResponse:
     return JSONResponse(
         status_code=409,
+        content={"detail": str(exc)}
+    )
+
+
+def document_not_found_error_handler(request: Request, exc: DocumentNotFoundError) -> JSONResponse:
+    return JSONResponse(
+        status_code=404,
+        content={"detail": str(exc)}
+    )
+
+
+def document_upload_error_handler(request: Request, exc: DocumentUploadError) -> JSONResponse:
+    return JSONResponse(
+        status_code=500,
         content={"detail": str(exc)}
     )

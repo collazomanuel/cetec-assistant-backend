@@ -667,6 +667,147 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "Documents",
+			"item": [
+				{
+					"name": "List Documents for Course",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{google_id_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/documents?course_code=CS101",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"documents"
+							],
+							"query": [
+								{
+									"key": "course_code",
+									"value": "CS101",
+									"description": "Code of the course to retrieve documents for"
+								}
+							]
+						},
+						"description": "List all documents for a course (professor and above)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Document with Download URL",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{google_id_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/documents/:document_id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"documents",
+								":document_id"
+							],
+							"variable": [
+								{
+									"key": "document_id",
+									"value": "550e8400-e29b-41d4-a716-446655440000",
+									"description": "UUID of the document"
+								}
+							]
+						},
+						"description": "Get document metadata and presigned download URL (professor and above)"
+					},
+					"response": []
+				},
+				{
+					"name": "Upload Document",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{google_id_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "course_code",
+									"value": "CS101",
+									"description": "Code of the course to upload document to",
+									"type": "text"
+								},
+								{
+									"key": "file",
+									"description": "File to upload",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/documents",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"documents"
+							]
+						},
+						"description": "Upload a document to a course (professor and above)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Document",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{google_id_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/documents/:document_id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"documents",
+								":document_id"
+							],
+							"variable": [
+								{
+									"key": "document_id",
+									"value": "550e8400-e29b-41d4-a716-446655440000",
+									"description": "UUID of the document to delete"
+								}
+							]
+						},
+						"description": "Delete a document (professor and above)"
+					},
+					"response": []
+				}
+			]
 		}
 	],
 	"variable": [

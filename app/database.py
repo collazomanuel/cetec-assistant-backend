@@ -21,3 +21,5 @@ def ensure_indexes() -> None:
     db.users.create_index("email", unique=True)
     db.logs.create_index([("timestamp", -1)])
     db.courses.create_index("code", unique=True)
+    db.documents.create_index("document_id", unique=True)
+    db.documents.create_index("course_code")

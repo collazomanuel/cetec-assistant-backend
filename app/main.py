@@ -11,7 +11,9 @@ from app.exceptions import (
     UserAlreadyExistsError,
     CannotDeleteSelfError,
     CourseNotFoundError,
-    CourseAlreadyExistsError
+    CourseAlreadyExistsError,
+    DocumentNotFoundError,
+    DocumentUploadError
 )
 from app.handlers import (
     authentication_error_handler,
@@ -21,9 +23,11 @@ from app.handlers import (
     user_already_exists_error_handler,
     cannot_delete_self_error_handler,
     course_not_found_error_handler,
-    course_already_exists_error_handler
+    course_already_exists_error_handler,
+    document_not_found_error_handler,
+    document_upload_error_handler
 )
-from app.routers import health, users, courses
+from app.routers import health, users, courses, documents
 
 
 app = FastAPI()
@@ -45,8 +49,11 @@ app.add_exception_handler(UserAlreadyExistsError, user_already_exists_error_hand
 app.add_exception_handler(CannotDeleteSelfError, cannot_delete_self_error_handler)
 app.add_exception_handler(CourseNotFoundError, course_not_found_error_handler)
 app.add_exception_handler(CourseAlreadyExistsError, course_already_exists_error_handler)
+app.add_exception_handler(DocumentNotFoundError, document_not_found_error_handler)
+app.add_exception_handler(DocumentUploadError, document_upload_error_handler)
 
 app.include_router(health.router)
 app.include_router(users.router)
 app.include_router(courses.router)
+app.include_router(documents.router)
 

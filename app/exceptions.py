@@ -29,3 +29,11 @@ class CourseNotFoundError(Exception):
 class CourseAlreadyExistsError(Exception):
     pass
 
+
+class DocumentNotFoundError(Exception):
+    pass
+
+
+class DocumentUploadError(Exception):
+    pass
+

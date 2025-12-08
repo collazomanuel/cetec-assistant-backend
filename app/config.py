@@ -6,6 +6,10 @@ class Settings(BaseSettings):
     mongodb_database: str
     google_client_id: str
     cors_origins: str
+    aws_access_key_id: str
+    aws_secret_access_key: str
+    aws_region: str
+    s3_bucket_name: str
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 

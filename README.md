@@ -10,6 +10,7 @@ FastAPI backend for a university AI assistant application with Google authentica
 
 - **FastAPI** - Web framework
 - **MongoDB** - Database (via pymongo)
+- **AWS S3** - Document storage
 - **Google Auth** - Authentication via Google ID tokens
 - **Python 3.11+** - Modern Python with type hints
 
@@ -38,6 +39,10 @@ MONGODB_URI=mongodb://localhost:27017
 MONGODB_DATABASE=cetec_assistant
 GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
 CORS_ORIGINS=http://localhost:3000,http://localhost:5173
+AWS_ACCESS_KEY_ID=your-aws-access-key-id
+AWS_SECRET_ACCESS_KEY=your-aws-secret-access-key
+AWS_REGION=us-east-1
+S3_BUCKET_NAME=your-s3-bucket-name
 ```
 
 4. Run:
@@ -59,15 +64,19 @@ app/
 ├── routers/
 │   ├── health.py        # Health check endpoint
 │   ├── users.py         # User management endpoints
-│   └── courses.py       # Course management endpoints
+│   ├── courses.py       # Course management endpoints
+│   └── documents.py     # Document management endpoints
 ├── models/
 │   ├── user.py          # User Pydantic models
 │   ├── course.py        # Course Pydantic models
+│   ├── document.py      # Document Pydantic models
 │   └── log.py           # Log entry model
 └── services/
     ├── auth.py          # Google token verification
     ├── user.py          # User CRUD operations
     ├── course.py        # Course CRUD operations
+    ├── document.py      # Document CRUD operations
+    ├── s3.py            # AWS S3 operations
     └── log.py           # Event logging service
 ```
 
@@ -111,6 +120,12 @@ Users must be created by an admin before they can authenticate.
 - `PATCH /courses` - Update course code/name/description (professor+)
 - `DELETE /courses` - Delete course (professor+)
 
+### Documents
+- `GET /documents?course_code=x` - List documents for a course (professor+)
+- `GET /documents/{document_id}` - Get document with presigned download URL (professor+)
+- `POST /documents` - Upload document to course (professor+, multipart/form-data)
+- `DELETE /documents/{document_id}` - Delete document (professor+)
+
 ## Event Logging
 
 All authentication attempts and management actions are logged to the `logs` collection:
@@ -118,6 +133,7 @@ All authentication attempts and management actions are logged to the `logs` coll
 - `auth_success` / `auth_failure` - Authentication events
 - `user_created` / `user_updated` / `user_deleted` - User management actions
 - `course_created` / `course_updated` / `course_deleted` - Course management actions
+- `document_uploaded` / `document_accessed` / `document_deleted` / `documents_listed` - Document management actions
 
 ## API Documentation
 
@@ -145,6 +161,20 @@ Import [`postman_collection.json`](postman_collection.json) into Postman. Update
   "code": "CS101",
   "name": "Introduction to Computer Science",
   "description": "Fundamentals of programming and algorithms"
+}
+```
+
+**documents**
+```json
+{
+  "document_id": "550e8400-e29b-41d4-a716-446655440000",
+  "course_code": "CS101",
+  "filename": "lecture-notes.pdf",
+  "s3_key": "documents/CS101/550e8400-e29b-41d4-a716-446655440000/lecture-notes.pdf",
+  "upload_timestamp": "2024-01-01T00:00:00Z",
+  "uploaded_by": "professor@example.com",
+  "file_size": 1024000,
+  "content_type": "application/pdf"
 }
 ```
 
