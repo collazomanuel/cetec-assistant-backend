@@ -11,8 +11,9 @@ from app.services.document import (
     delete_document as delete_document_service,
     get_document_download_url as get_document_download_url_service
 )
+from app.services.course import get_course_by_code
 from app.services.log import log_event
-from app.exceptions import DocumentNotFoundError, FileTooLargeError
+from app.exceptions import DocumentNotFoundError, FileTooLargeError, CourseNotFoundError
 
 router = APIRouter(prefix="/documents")
 
@@ -65,6 +66,11 @@ def upload_document(
     current_user: UserResponse = Depends(require_professor),
     db: Database = Depends(get_database)
 ) -> DocumentResponse:
+    # Validate course exists
+    course = get_course_by_code(course_code, db)
+    if course is None:
+        raise CourseNotFoundError(f"Course with code {course_code} not found")
+    
     # Get file size
     file.file.seek(0, 2)
     file_size = file.file.tell()
