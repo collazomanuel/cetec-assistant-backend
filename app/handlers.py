@@ -17,85 +17,34 @@ from app.exceptions import (
 )
 
 
-def authentication_error_handler(request: Request, exc: AuthenticationError) -> JSONResponse:
-    return JSONResponse(
-        status_code=401,
-        content={"detail": str(exc)}
-    )
+def create_error_handler(status_code: int):
+    def handler(request: Request, exc: Exception) -> JSONResponse:
+        return JSONResponse(
+            status_code=status_code,
+            content={"detail": str(exc)}
+        )
+    return handler
 
 
-def user_not_found_error_handler(request: Request, exc: UserNotFoundError) -> JSONResponse:
-    return JSONResponse(
-        status_code=404,
-        content={"detail": str(exc)}
-    )
+EXCEPTION_HANDLERS = {
+    AuthenticationError: 401,
+    UserNotFoundError: 404,
+    CourseNotFoundError: 404,
+    DocumentNotFoundError: 404,
+    UnregisteredUserError: 403,
+    ForbiddenError: 403,
+    UserAlreadyExistsError: 409,
+    CourseAlreadyExistsError: 409,
+    CannotDeleteSelfError: 400,
+    DocumentUploadError: 500,
+    DocumentDeleteError: 500,
+    FileTooLargeError: 413,
+}
 
 
-def user_not_registered_error_handler(request: Request, exc: UnregisteredUserError) -> JSONResponse:
-    return JSONResponse(
-        status_code=403,
-        content={"detail": str(exc)}
-    )
-
-
-def forbidden_error_handler(request: Request, exc: ForbiddenError) -> JSONResponse:
-    return JSONResponse(
-        status_code=403,
-        content={"detail": str(exc)}
-    )
-
-
-def user_already_exists_error_handler(request: Request, exc: UserAlreadyExistsError) -> JSONResponse:
-    return JSONResponse(
-        status_code=409,
-        content={"detail": str(exc)}
-    )
-
-
-def cannot_delete_self_error_handler(request: Request, exc: CannotDeleteSelfError) -> JSONResponse:
-    return JSONResponse(
-        status_code=400,
-        content={"detail": str(exc)}
-    )
-
-
-def course_not_found_error_handler(request: Request, exc: CourseNotFoundError) -> JSONResponse:
-    return JSONResponse(
-        status_code=404,
-        content={"detail": str(exc)}
-    )
-
-
-def course_already_exists_error_handler(request: Request, exc: CourseAlreadyExistsError) -> JSONResponse:
-    return JSONResponse(
-        status_code=409,
-        content={"detail": str(exc)}
-    )
-
-
-def document_not_found_error_handler(request: Request, exc: DocumentNotFoundError) -> JSONResponse:
-    return JSONResponse(
-        status_code=404,
-        content={"detail": str(exc)}
-    )
-
-
-def document_upload_error_handler(request: Request, exc: DocumentUploadError) -> JSONResponse:
-    return JSONResponse(
-        status_code=500,
-        content={"detail": str(exc)}
-    )
-
-
-def document_delete_error_handler(request: Request, exc: DocumentDeleteError) -> JSONResponse:
-    return JSONResponse(
-        status_code=500,
-        content={"detail": str(exc)}
-    )
-
-
-def file_too_large_error_handler(request: Request, exc: FileTooLargeError) -> JSONResponse:
-    return JSONResponse(
-        status_code=413,
-        content={"detail": str(exc)}
-    )
+def register_exception_handlers(app):
+    for exception_class, status_code in EXCEPTION_HANDLERS.items():
+        app.add_exception_handler(
+            exception_class,
+            create_error_handler(status_code)
+        )
