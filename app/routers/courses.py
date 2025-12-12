@@ -1,8 +1,9 @@
 from fastapi import APIRouter, Depends
 from pymongo.database import Database
+from qdrant_client import QdrantClient
 
 from app.database import get_database
-from app.dependencies import get_current_user, require_student, require_professor
+from app.dependencies import require_student, require_professor, get_qdrant_client
 from app.exceptions import CourseNotFoundError
 from app.models.user import UserResponse
 from app.models.course import CourseResponse, CourseCreate, CourseUpdate, CourseDelete
@@ -14,7 +15,7 @@ router = APIRouter(prefix="/courses")
 
 
 @router.get("")
-def get_courses(
+async def get_courses(
     code: str | None = None,
     current_user: UserResponse = Depends(require_student),
     db: Database = Depends(get_database)
@@ -28,7 +29,7 @@ def get_courses(
 
 
 @router.post("")
-def create_course(
+async def create_course(
     course_data: CourseCreate,
     current_user: UserResponse = Depends(require_professor),
     db: Database = Depends(get_database)
@@ -49,7 +50,7 @@ def create_course(
 
 
 @router.patch("")
-def update_course(
+async def update_course(
     course_data: CourseUpdate,
     current_user: UserResponse = Depends(require_professor),
     db: Database = Depends(get_database)
@@ -57,7 +58,6 @@ def update_course(
     course = course_service.update_course(
         course_data.code,
         db,
-        new_code=course_data.new_code,
         name=course_data.name,
         description=course_data.description
     )
@@ -71,12 +71,13 @@ def update_course(
 
 
 @router.delete("")
-def delete_course(
+async def delete_course(
     course_data: CourseDelete,
     current_user: UserResponse = Depends(require_professor),
-    db: Database = Depends(get_database)
+    db: Database = Depends(get_database),
+    qdrant_client: QdrantClient = Depends(get_qdrant_client)
 ) -> dict[str, str]:
-    course_service.delete_course(course_data.code, db)
+    course_service.delete_course(course_data.code, db, qdrant_client)
     log_event(
         "course_deleted",
         level="info",

@@ -45,3 +45,48 @@ class DocumentDeleteError(Exception):
 class FileTooLargeError(Exception):
     pass
 
+
+class IngestionJobNotFoundError(Exception):
+    pass
+
+
+class IngestionJobError(Exception):
+    pass
+
+
+class PDFExtractionError(Exception):
+    pass
+
+
+class EmbeddingError(Exception):
+    pass
+
+
+class VectorStoreError(Exception):
+    pass
+
+
+class StorageError(Exception):
+    """Base exception for S3/storage operations."""
+    pass
+
+
+class StorageUploadError(StorageError):
+    """Exception for S3 upload failures."""
+    pass
+
+
+class StorageDownloadError(StorageError):
+    """Exception for S3 download failures."""
+    pass
+
+
+class StorageDeleteError(StorageError):
+    """Exception for S3 deletion failures."""
+    pass
+
+
+class StorageURLError(StorageError):
+    """Exception for presigned URL generation failures."""
+    pass
+

@@ -13,7 +13,16 @@ from app.exceptions import (
     DocumentNotFoundError,
     DocumentUploadError,
     DocumentDeleteError,
-    FileTooLargeError
+    FileTooLargeError,
+    IngestionJobNotFoundError,
+    IngestionJobError,
+    PDFExtractionError,
+    EmbeddingError,
+    VectorStoreError,
+    StorageUploadError,
+    StorageDownloadError,
+    StorageDeleteError,
+    StorageURLError
 )
 
 
@@ -31,6 +40,7 @@ EXCEPTION_HANDLERS = {
     UserNotFoundError: 404,
     CourseNotFoundError: 404,
     DocumentNotFoundError: 404,
+    IngestionJobNotFoundError: 404,
     UnregisteredUserError: 403,
     ForbiddenError: 403,
     UserAlreadyExistsError: 409,
@@ -39,6 +49,14 @@ EXCEPTION_HANDLERS = {
     DocumentUploadError: 500,
     DocumentDeleteError: 500,
     FileTooLargeError: 413,
+    IngestionJobError: 500,
+    PDFExtractionError: 500,
+    EmbeddingError: 500,
+    VectorStoreError: 500,
+    StorageUploadError: 500,
+    StorageDownloadError: 500,
+    StorageDeleteError: 500,
+    StorageURLError: 500,
 }
 
 

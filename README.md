@@ -11,6 +11,8 @@ FastAPI backend for a university AI assistant application with Google authentica
 - **FastAPI** - Web framework
 - **MongoDB** - Database (via pymongo)
 - **AWS S3** - Document storage
+- **Qdrant** - Vector database for semantic search
+- **Sentence Transformers / OpenAI** - Text embedding models
 - **Google Auth** - Authentication via Google ID tokens
 - **Python 3.11+** - Modern Python with type hints
 
@@ -43,6 +45,14 @@ AWS_ACCESS_KEY_ID=your-aws-access-key-id
 AWS_SECRET_ACCESS_KEY=your-aws-secret-access-key
 AWS_REGION=us-east-1
 S3_BUCKET_NAME=your-s3-bucket-name
+QDRANT_URL=http://localhost:6333
+QDRANT_API_KEY=your-qdrant-api-key  # Optional for local Qdrant
+QDRANT_COLLECTION_NAME=cetec_documents
+EMBEDDING_PROVIDER=local  # or "openai"
+EMBEDDING_MODEL=all-MiniLM-L6-v2  # or "text-embedding-3-small" for OpenAI
+OPENAI_API_KEY=your-openai-api-key  # Required if using OpenAI embeddings
+CHUNK_SIZE=1000
+CHUNK_OVERLAP=150
 ```
 
 **⚠️ SECURITY WARNING:** Never commit the `.env` file to version control. It contains sensitive credentials that should remain private. The `.env` file is already in `.gitignore` to prevent accidental commits.
@@ -58,27 +68,34 @@ API available at `http://localhost:8000`
 
 ```
 app/
-├── main.py              # FastAPI app with exception handlers
+├── main.py              # FastAPI app with lifespan management
 ├── config.py            # Settings via pydantic-settings
 ├── database.py          # MongoDB connection and indexes
-├── dependencies.py      # Auth dependencies and role checks
+├── dependencies.py      # Auth dependencies and DI
 ├── exceptions.py        # Custom exceptions
+├── handlers.py          # Exception handlers
 ├── routers/
 │   ├── health.py        # Health check endpoint
 │   ├── users.py         # User management endpoints
 │   ├── courses.py       # Course management endpoints
-│   └── documents.py     # Document management endpoints
+│   ├── documents.py     # Document management endpoints
+│   └── ingestions.py    # Document ingestion endpoints
 ├── models/
 │   ├── user.py          # User Pydantic models
 │   ├── course.py        # Course Pydantic models
 │   ├── document.py      # Document Pydantic models
+│   ├── ingestion.py     # Ingestion job models
 │   └── log.py           # Log entry model
 └── services/
     ├── auth.py          # Google token verification
     ├── user.py          # User CRUD operations
     ├── course.py        # Course CRUD operations
     ├── document.py      # Document CRUD operations
+    ├── ingestion.py     # Ingestion job processing
     ├── s3.py            # AWS S3 operations
+    ├── pdf.py           # PDF text extraction
+    ├── embedder.py      # Text embedding models
+    ├── qdrant.py        # Vector database operations
     └── log.py           # Event logging service
 ```
 
@@ -128,6 +145,19 @@ Users must be created by an admin before they can authenticate.
 - `POST /documents` - Upload document to course (professor+, multipart/form-data)
 - `DELETE /documents` - Delete document (professor+, body: document_id)
 
+### Ingestions
+- `POST /ingestions/start` - Start a document ingestion job (professor+)
+- `GET /ingestions/list?course_code=x` - List ingestion jobs for a course (student+)
+- `GET /ingestions/status?job_id=x` - Get ingestion job status (student+)
+- `POST /ingestions/cancel` - Cancel a running ingestion job (professor+)
+- `POST /ingestions/retry` - Retry a failed ingestion job (professor+)
+
+**Ingestion Modes:**
+- `NEW` - Process only newly uploaded documents
+- `SELECTED` - Process specific documents by ID
+- `ALL` - Process all documents in the course
+- `REINGEST` - Reprocess already ingested documents
+
 ## Event Logging
 
 All authentication attempts and management actions are logged to the `logs` collection:
@@ -136,6 +166,8 @@ All authentication attempts and management actions are logged to the `logs` coll
 - `user_created` / `user_updated` / `user_deleted` - User management actions
 - `course_created` / `course_updated` / `course_deleted` - Course management actions
 - `document_uploaded` / `document_accessed` / `document_deleted` / `documents_listed` - Document management actions
+- `ingestion_job_created` / `ingestion_job_completed` / `ingestion_job_failed` / `ingestion_job_canceled` - Ingestion job lifecycle
+- `ingestion_document_failed` / `vector_cleanup_failed` - Ingestion processing errors
 
 ## API Documentation
 
@@ -144,7 +176,7 @@ All authentication attempts and management actions are logged to the `logs` coll
 
 ## Testing
 
-Import [`postman_collection.json`](postman_collection.json) into Postman. Update the `google_id_token` variable with a token from the dev tools helper.
+Import [`dev_tools/postman_collection.json`](dev_tools/postman_collection.json) into Postman. Update the `google_id_token` variable with a token from the dev tools helper.
 
 ## Database Collections
 
@@ -188,6 +220,26 @@ Import [`postman_collection.json`](postman_collection.json) into Postman. Update
   "user_email": "user@example.com",
   "details": {},
   "level": "info"
+}
+```
+
+**ingestion_jobs**
+```json
+{
+  "job_id": "550e8400-e29b-41d4-a716-446655440000",
+  "course_code": "CS101",
+  "status": "RUNNING",
+  "mode": "NEW",
+  "document_ids": null,
+  "docs_total": 5,
+  "docs_done": 2,
+  "vectors_created": 150,
+  "created_at": "2024-01-01T00:00:00Z",
+  "updated_at": "2024-01-01T00:05:00Z",
+  "created_by": "professor@example.com",
+  "error_message": null,
+  "retry_count": 0,
+  "max_retries": 3
 }
 ```
 

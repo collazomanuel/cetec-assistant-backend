@@ -7,3 +7,7 @@ requests
 email-validator
 boto3
 python-multipart
+qdrant-client
+pypdf
+sentence-transformers
+openai

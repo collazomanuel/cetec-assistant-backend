@@ -10,6 +10,18 @@ def log_event(
     user_email: str | None = None,
     details: dict | None = None
 ) -> None:
+    """
+    Log an event to the database.
+
+    This is a synchronous function that can be called from both
+    async and sync contexts without await.
+
+    Args:
+        event_type: Type of event being logged
+        level: Log level (info, warning, error)
+        user_email: Email of the user associated with this event
+        details: Additional details about the event
+    """
     log_entry = LogEntry(
         timestamp=datetime.now(timezone.utc),
         event_type=event_type,

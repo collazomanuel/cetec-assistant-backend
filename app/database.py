@@ -23,3 +23,6 @@ def ensure_indexes() -> None:
     db.courses.create_index("code", unique=True)
     db.documents.create_index("document_id", unique=True)
     db.documents.create_index("course_code")
+    db.ingestion_jobs.create_index("job_id", unique=True)
+    db.ingestion_jobs.create_index("course_code")
+    db.ingestion_jobs.create_index([("created_at", -1)])

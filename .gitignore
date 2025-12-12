@@ -128,3 +128,6 @@ dmypy.json
 *.swp
 *.swo
 *~
+
+# Claude Code
+.claude/

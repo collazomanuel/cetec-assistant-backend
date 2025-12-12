@@ -13,12 +13,12 @@ router = APIRouter(prefix="/users")
 
 
 @router.get("/me")
-def get_me(current_user: UserResponse = Depends(get_current_user)) -> UserResponse:
+async def get_me(current_user: UserResponse = Depends(get_current_user)) -> UserResponse:
     return current_user
 
 
 @router.get("")
-def get_users(
+async def get_users(
     email: str | None = None,
     current_user: UserResponse = Depends(require_admin),
     db: Database = Depends(get_database)
@@ -32,7 +32,7 @@ def get_users(
 
 
 @router.post("")
-def create_user(
+async def create_user(
     user_data: UserCreate,
     current_user: UserResponse = Depends(require_admin),
     db: Database = Depends(get_database)
@@ -48,7 +48,7 @@ def create_user(
 
 
 @router.patch("")
-def update_user(
+async def update_user(
     user_data: UserUpdate,
     current_user: UserResponse = Depends(require_admin),
     db: Database = Depends(get_database)
@@ -64,7 +64,7 @@ def update_user(
 
 
 @router.delete("")
-def delete_user(
+async def delete_user(
     user_data: UserDelete,
     current_user: UserResponse = Depends(require_admin),
     db: Database = Depends(get_database)

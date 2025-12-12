@@ -1,6 +1,9 @@
-from fastapi import Depends
+from typing import TYPE_CHECKING
+
+from fastapi import Depends, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pymongo.database import Database
+from qdrant_client import QdrantClient
 
 from app.database import get_database
 from app.exceptions import AuthenticationError, UnregisteredUserError, ForbiddenError
@@ -9,8 +12,21 @@ from app.services.auth import verify_google_token
 from app.services.user import get_user_by_email
 from app.services.log import log_event
 
+if TYPE_CHECKING:
+    from app.services.embedder import BaseEmbedder
+
 
 security = HTTPBearer()
+
+
+def get_embedder(request: Request) -> "BaseEmbedder":
+    """Dependency to get the embedder instance from app state."""
+    return request.app.state.embedder
+
+
+def get_qdrant_client(request: Request) -> QdrantClient:
+    """Dependency to get the Qdrant client instance from app state."""
+    return request.app.state.qdrant_client
 
 
 def get_current_user(

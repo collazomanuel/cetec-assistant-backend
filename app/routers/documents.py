@@ -1,9 +1,10 @@
 from fastapi import APIRouter, Depends, UploadFile, File, Form, Query
 from pymongo.database import Database
+from qdrant_client import QdrantClient
 
 from app.config import settings
 from app.database import get_database
-from app.dependencies import require_professor
+from app.dependencies import require_professor, get_qdrant_client
 from app.models.user import UserResponse
 from app.models.document import DocumentResponse, DocumentWithDownloadUrl, DocumentDelete
 from app.services import document as document_service
@@ -15,7 +16,7 @@ router = APIRouter(prefix="/documents")
 
 
 @router.get("/course")
-def list_documents(
+async def list_documents(
     course_code: str = Query(..., description="Course code to filter documents"),
     current_user: UserResponse = Depends(require_professor),
     db: Database = Depends(get_database)
@@ -31,7 +32,7 @@ def list_documents(
 
 
 @router.get("/download")
-def get_document(
+async def get_document(
     document_id: str = Query(..., description="Document ID to retrieve"),
     current_user: UserResponse = Depends(require_professor),
     db: Database = Depends(get_database)
@@ -54,7 +55,7 @@ def get_document(
 
 
 @router.post("")
-def upload_document(
+async def upload_document(
     course_code: str = Form(...),
     file: UploadFile = File(...),
     current_user: UserResponse = Depends(require_professor),
@@ -63,18 +64,18 @@ def upload_document(
     course = course_service.get_course_by_code(course_code, db)
     if course is None:
         raise CourseNotFoundError(f"Course with code {course_code} not found")
-    
+
     try:
         file.file.seek(0, 2)
         file_size = file.file.tell()
         file.file.seek(0)
-        
+
         if file_size > settings.max_file_size:
             raise FileTooLargeError(
                 f"File size ({file_size} bytes) exceeds maximum allowed size "
                 f"of {settings.max_file_size} bytes ({settings.max_file_size // (1024 * 1024)}MB)"
             )
-        
+
         content_type = file.content_type or "application/octet-stream"
 
         document = document_service.create_document(
@@ -105,16 +106,17 @@ def upload_document(
 
 
 @router.delete("")
-def delete_document(
+async def delete_document(
     document_data: DocumentDelete,
     current_user: UserResponse = Depends(require_professor),
-    db: Database = Depends(get_database)
+    db: Database = Depends(get_database),
+    qdrant_client: QdrantClient = Depends(get_qdrant_client)
 ) -> dict[str, str]:
     document = document_service.get_document_by_id(document_data.document_id, db)
     if document is None:
         raise DocumentNotFoundError(f"Document with ID {document_data.document_id} not found")
 
-    document_service.delete_document(document_data.document_id, db)
+    document_service.delete_document(document_data.document_id, db, qdrant_client)
 
     log_event(
         "document_deleted",

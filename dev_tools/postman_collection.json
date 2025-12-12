@@ -600,43 +600,6 @@
 					"response": []
 				},
 				{
-					"name": "Update Course Code",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{google_id_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "PATCH",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"code\": \"CS101\",\n  \"new_code\": \"CS102\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/courses",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"courses"
-							]
-						},
-						"description": "Update course code (professor and above)"
-					},
-					"response": []
-				},
-				{
 					"name": "Delete Course",
 					"request": {
 						"auth": {
@@ -829,6 +792,235 @@
 							]
 						},
 						"description": "Delete a document (professor and above)"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Ingestions",
+			"item": [
+				{
+					"name": "Start Ingestion Job",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{google_id_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"course_code\": \"CS101\",\n  \"mode\": \"NEW\",\n  \"max_retries\": 3\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/ingestions/start",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ingestions",
+								"start"
+							]
+						},
+						"description": "Start an ingestion job for a course. Modes: NEW (new documents), SELECTED (specific documents), ALL (all documents), REINGEST (re-ingest ingested documents). Returns 202 Accepted with job details. (professor and above)"
+					},
+					"response": []
+				},
+				{
+					"name": "Start Ingestion Job (SELECTED mode)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{google_id_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"course_code\": \"CS101\",\n  \"mode\": \"SELECTED\",\n  \"document_ids\": [\n    \"550e8400-e29b-41d4-a716-446655440000\",\n    \"550e8400-e29b-41d4-a716-446655440001\"\n  ],\n  \"max_retries\": 3\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/ingestions/start",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ingestions",
+								"start"
+							]
+						},
+						"description": "Start an ingestion job for selected documents. document_ids required when mode is SELECTED. (professor and above)"
+					},
+					"response": []
+				},
+				{
+					"name": "List Ingestion Jobs",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{google_id_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/ingestions/list?course_code=CS101",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ingestions",
+								"list"
+							],
+							"query": [
+								{
+									"key": "course_code",
+									"value": "CS101",
+									"description": "Code of the course to list ingestion jobs for"
+								}
+							]
+						},
+						"description": "List all ingestion jobs for a course, sorted by creation date (newest first). (student and above)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Ingestion Job Status",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{google_id_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/ingestions/status?job_id=550e8400-e29b-41d4-a716-446655440000",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ingestions",
+								"status"
+							],
+							"query": [
+								{
+									"key": "job_id",
+									"value": "550e8400-e29b-41d4-a716-446655440000",
+									"description": "UUID of the ingestion job"
+								}
+							]
+						},
+						"description": "Get the status of an ingestion job. Statuses: QUEUED, RUNNING, COMPLETED, FAILED, CANCELED. (student and above)"
+					},
+					"response": []
+				},
+				{
+					"name": "Cancel Ingestion Job",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{google_id_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"job_id\": \"550e8400-e29b-41d4-a716-446655440000\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/ingestions/cancel",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ingestions",
+								"cancel"
+							]
+						},
+						"description": "Cancel a running or queued ingestion job. Cannot cancel completed, failed, or already canceled jobs. (professor and above)"
+					},
+					"response": []
+				},
+				{
+					"name": "Retry Failed Ingestion Job",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{google_id_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"job_id\": \"550e8400-e29b-41d4-a716-446655440000\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/ingestions/retry",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ingestions",
+								"retry"
+							]
+						},
+						"description": "Retry a failed ingestion job. Job must be in FAILED status and not exceed max_retries. (professor and above)"
 					},
 					"response": []
 				}
