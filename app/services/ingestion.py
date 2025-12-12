@@ -15,7 +15,8 @@ from app.exceptions import (
     StorageError,
     PDFExtractionError,
     EmbeddingError,
-    VectorStoreError
+    VectorStoreError,
+    CourseNotFoundError
 )
 from app.models.document import DocumentStatus
 from app.models.ingestion import (
@@ -37,6 +38,10 @@ def create_ingestion_job(
     created_by: str,
     db: Database
 ) -> IngestionJobResponse:
+    course = db.courses.find_one({"code": course_code})
+    if course is None:
+        raise CourseNotFoundError(f"Course with code {course_code} not found")
+    
     job_id = str(uuid.uuid4())
 
     documents = _get_documents_for_ingestion(
